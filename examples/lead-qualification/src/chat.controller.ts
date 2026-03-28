@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Controller, Post, Body } from '@nestjs/common'
 import { FlowRunner } from '@conversation-flow/nestjs'
 

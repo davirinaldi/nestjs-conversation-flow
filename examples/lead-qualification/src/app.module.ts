@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Module } from '@nestjs/common'
 import { ConversationFlowModule } from '@conversation-flow/nestjs'
 import { LeadFlow } from './lead-flow'
