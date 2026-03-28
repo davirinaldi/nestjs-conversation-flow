@@ -38,7 +38,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Trier-Projetos/nestjs-conversation-flow",
+    "url": "https://github.com/davirinaldi/nestjs-conversation-flow",
     "directory": "packages/redis"
   },
   "keywords": ["conversation-flow", "redis", "storage", "session"],
