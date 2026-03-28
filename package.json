@@ -28,7 +28,12 @@
   "jest": {
     "testEnvironment": "node",
     "transform": {
-      "^.+\\.ts$": ["ts-jest", { "tsconfig": "tsconfig.test.json" }]
+      "^.+\\.ts$": [
+        "ts-jest",
+        {
+          "tsconfig": "tsconfig.test.json"
+        }
+      ]
     },
     "roots": [
       "<rootDir>/packages/"
@@ -56,5 +61,6 @@
   },
   "engines": {
     "node": ">=18"
-  }
+  },
+  "version": "0.0.1"
 }
