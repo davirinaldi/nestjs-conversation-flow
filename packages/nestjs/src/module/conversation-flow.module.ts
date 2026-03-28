@@ -1,5 +1,8 @@
 import type { DynamicModule } from '@nestjs/common'
 import type { StorageAdapter, FlowSession } from '@conversation-flow/core'
+import { MemoryStorageAdapter, FlowEngine } from '@conversation-flow/core'
+import { FlowRunner } from '../runner/flow-runner.service.js'
+import { FlowDiscoveryService } from '../discovery/flow-discovery.service.js'
 
 /**
  * Configuration options for ConversationFlowModule.forRoot().
@@ -40,14 +43,27 @@ export interface ConversationFlowModuleOptions {
 export class ConversationFlowModule {
   /**
    * Configures the module with the given options and returns a DynamicModule.
-   *
-   * TODO: Implement provider registration, flow discovery, and storage adapter initialization.
    */
-  static forRoot(_options: ConversationFlowModuleOptions): DynamicModule {
+  static forRoot(options: ConversationFlowModuleOptions): DynamicModule {
+    const flowDefinitions = options.flows.map((flowClass) =>
+      FlowDiscoveryService.buildFlowDefinition(flowClass),
+    )
+
+    const storage: StorageAdapter =
+      options.storage === 'memory'
+        ? new MemoryStorageAdapter({ ttl: options.sessionTtl })
+        : options.storage
+
+    const engine = FlowEngine.create(storage, flowDefinitions)
+    const flowRunner = new FlowRunner(engine, options.onHandoff)
+
     return {
       module: ConversationFlowModule,
-      providers: [],
-      exports: [],
+      providers: [
+        { provide: FlowRunner, useValue: flowRunner },
+        { provide: FlowEngine, useValue: engine },
+      ],
+      exports: [FlowRunner, FlowEngine],
     }
   }
 }

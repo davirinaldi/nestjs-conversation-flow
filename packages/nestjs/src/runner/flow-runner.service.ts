@@ -1,10 +1,9 @@
-import type { ProcessInput, ProcessResult } from '@conversation-flow/core'
+import type { ProcessInput, ProcessResult, FlowSession } from '@conversation-flow/core'
+import { FlowEngine } from '@conversation-flow/core'
 
 /**
  * Injectable service that processes incoming user messages through conversation flows.
- * This is the main entry point for controllers to interact with the conversation engine.
- *
- * Inject this service in your controller and call `.process()` with the user's message.
+ * Delegates to FlowEngine and invokes the onHandoff callback when handoff is triggered.
  *
  * @example
  * ```typescript
@@ -24,19 +23,22 @@ import type { ProcessInput, ProcessResult } from '@conversation-flow/core'
  * ```
  */
 export class FlowRunner {
+  constructor(
+    private readonly engine: FlowEngine,
+    private readonly onHandoff?: (session: FlowSession) => void,
+  ) {}
+
   /**
    * Process a single user message through the identified flow.
-   *
-   * 1. Load or create the session from storage
-   * 2. Resolve the current step using StepRouter
-   * 3. Execute the step handler
-   * 4. Check HandoffTrigger
-   * 5. Persist updated session
-   * 6. Return ProcessResult
-   *
-   * TODO: Implement the execution pipeline.
+   * After engine processing, invokes the onHandoff callback if handoff was triggered.
    */
-  async process(_input: ProcessInput): Promise<ProcessResult> {
-    throw new Error('FlowRunner.process() is not yet implemented')
+  async process(input: ProcessInput): Promise<ProcessResult> {
+    const result = await this.engine.process(input)
+
+    if (result.handoff && this.onHandoff) {
+      this.onHandoff(result.session)
+    }
+
+    return result
   }
 }

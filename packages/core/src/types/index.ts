@@ -107,3 +107,5 @@ export interface ProcessResult {
   /** Whether a handoff to a human agent was triggered by this step */
   handoff: boolean
 }
+
+export type { StepDefinition, FlowDefinition } from './flow-definition.js'
