@@ -83,9 +83,64 @@ A `FlowSession` is the state object that persists between messages for a given u
 
 Steps are methods decorated with `@Step(name)`. Each step receives the current session and returns a string response. Use `@After(previousStep)` to declare ordering — the engine uses this to build the step execution graph.
 
+### Conditional branching
+
+Use `@Condition` to route the conversation to different steps based on session data. Conditions are evaluated in order after the step handler runs — the first `when` that returns `true` wins. If no condition matches, the flow completes.
+
+```typescript
+@Step('qualify')
+@After('collect-info')
+@Condition([
+  { when: async (session) => (session.data.score as number) > 0.8, then: 'handoff-to-sales' },
+  { when: async (session) => (session.data.score as number) > 0.5, then: 'nurture-campaign' },
+])
+async qualify(@Session() session: FlowSession) {
+  session.data.score = 0.9
+  return 'Scoring complete.'
+}
+```
+
 ### Handoff
 
 The `@HandoffTrigger()` decorator marks a method that decides whether to hand off the conversation to a human agent. When the method returns `true`, the engine sets `handoff: true` in the result and invokes the `onHandoff` callback.
+
+### Step completion hook
+
+The `onStepComplete` hook fires after each step handler runs but before the next step is resolved. Use it for LLM scoring, logging, or data enrichment:
+
+```typescript
+ConversationFlowModule.forRoot({
+  flows: [LeadFlow],
+  storage: 'memory',
+  onStepComplete: async (context) => {
+    // context: { flowId, stepName, input, response, session }
+    const score = await myLLM.score(context.response)
+    context.session.data.score = score  // mutations persist and influence @Condition routing
+  },
+})
+```
+
+## Express adapter
+
+Use conversation flows without NestJS:
+
+```bash
+npm install @conversation-flow/core @conversation-flow/express
+```
+
+```typescript
+import express from 'express'
+import { FlowEngine, MemoryStorageAdapter } from '@conversation-flow/core'
+import { createConversationFlowRouter } from '@conversation-flow/express'
+
+const engine = FlowEngine.create(new MemoryStorageAdapter(), [myFlowDefinition])
+
+const app = express()
+app.use(express.json())
+app.use('/chat', createConversationFlowRouter({ engine }))
+app.listen(3000)
+// POST /chat/my-flow/message { sessionId: "u1", input: "hello" }
+```
 
 ## API reference
 
@@ -96,6 +151,7 @@ The `@HandoffTrigger()` decorator marks a method that decides whether to hand of
 | `@ConversationFlow(flowId)` | class | Registers a class as a conversation flow |
 | `@Step(stepName)` | method | Marks a method as a conversation step |
 | `@After(stepName)` | method | Declares which step precedes this one |
+| `@Condition(routes)` | method | Defines conditional branching after this step |
 | `@HandoffTrigger()` | method | Marks the handoff decision method |
 | `@Session()` | parameter | Injects the current `FlowSession` |
 
@@ -139,10 +195,24 @@ interface StorageAdapter {
 **Built-in adapters:**
 
 - `'memory'` — In-memory storage using a `Map`. Good for development and testing. Sessions are lost on restart.
+- `RedisStorageAdapter` — Redis-backed storage with native TTL via `ioredis`. Install separately:
 
-**Planned adapters (v1.1):**
+```bash
+npm install @conversation-flow/redis ioredis
+```
 
-- `RedisStorageAdapter` — Redis-backed storage with native TTL support.
+```typescript
+import { RedisStorageAdapter } from '@conversation-flow/redis'
+
+ConversationFlowModule.forRoot({
+  storage: new RedisStorageAdapter({
+    redis: 'redis://localhost:6379',
+    prefix: 'cf:session:',  // default
+    ttl: 3600,              // default, in seconds
+  }),
+  flows: [LeadFlow],
+})
+```
 
 You can implement your own adapter for any storage backend by implementing the `StorageAdapter` interface.
 
@@ -152,27 +222,29 @@ You can implement your own adapter for any storage backend by implementing the `
 |---|---|---|
 | `@conversation-flow/core` | [![npm](https://img.shields.io/npm/v/@conversation-flow/core)](https://www.npmjs.com/package/@conversation-flow/core) | Pure TS engine, zero dependencies |
 | `@conversation-flow/nestjs` | [![npm](https://img.shields.io/npm/v/@conversation-flow/nestjs)](https://www.npmjs.com/package/@conversation-flow/nestjs) | NestJS module + decorators |
+| `@conversation-flow/redis` | [![npm](https://img.shields.io/npm/v/@conversation-flow/redis)](https://www.npmjs.com/package/@conversation-flow/redis) | Redis storage adapter |
+| `@conversation-flow/express` | [![npm](https://img.shields.io/npm/v/@conversation-flow/express)](https://www.npmjs.com/package/@conversation-flow/express) | Express adapter |
 
 ## Roadmap
 
 ### v1.0
 
 - [x] Monorepo scaffold
-- [ ] `FlowSession` type + `MemoryStorageAdapter`
-- [ ] `FlowEngine.process()` — core execution loop
-- [ ] `StepRouter` — resolves next step from `@After` metadata
-- [ ] All decorators: `@ConversationFlow`, `@Step`, `@After`, `@Session`, `@HandoffTrigger`
-- [ ] `ConversationFlowModule.forRoot()`
-- [ ] `FlowRunner` injectable service
-- [ ] Jest tests (>80% coverage)
-- [ ] GitHub Actions CI
+- [x] `FlowSession` type + `MemoryStorageAdapter`
+- [x] `FlowEngine.process()` — core execution loop
+- [x] `StepRouter` — resolves next step from `@After` metadata
+- [x] All decorators: `@ConversationFlow`, `@Step`, `@After`, `@Session`, `@HandoffTrigger`
+- [x] `ConversationFlowModule.forRoot()`
+- [x] `FlowRunner` injectable service
+- [x] Jest tests (>80% coverage)
+- [x] GitHub Actions CI
 
 ### v1.1
 
-- [ ] `RedisStorageAdapter`
-- [ ] `@Condition` decorator for branching steps
-- [ ] LLM scoring hook (`onStepComplete` middleware)
-- [ ] Express adapter
+- [x] `RedisStorageAdapter`
+- [x] `@Condition` decorator for branching steps
+- [x] LLM scoring hook (`onStepComplete` middleware)
+- [x] Express adapter
 
 ## Contributing
 

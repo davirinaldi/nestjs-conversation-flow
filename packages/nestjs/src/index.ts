@@ -1,4 +1,12 @@
-export { ConversationFlow, Step, After, HandoffTrigger, Session } from './decorators/index.js'
+export {
+  ConversationFlow,
+  Step,
+  After,
+  HandoffTrigger,
+  Session,
+  Condition,
+} from './decorators/index.js'
+export type { ConditionRoute } from './decorators/index.js'
 
 export { ConversationFlowModule } from './module/conversation-flow.module.js'
 export type { ConversationFlowModuleOptions } from './module/conversation-flow.module.js'

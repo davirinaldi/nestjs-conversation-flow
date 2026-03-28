@@ -1,5 +1,5 @@
 import type { DynamicModule } from '@nestjs/common'
-import type { StorageAdapter, FlowSession } from '@conversation-flow/core'
+import type { StorageAdapter, FlowSession, StepCompleteContext } from '@conversation-flow/core'
 import { MemoryStorageAdapter, FlowEngine } from '@conversation-flow/core'
 import { FlowRunner } from '../runner/flow-runner.service.js'
 import { FlowDiscoveryService } from '../discovery/flow-discovery.service.js'
@@ -20,6 +20,9 @@ export interface ConversationFlowModuleOptions {
 
   /** Callback invoked when a @HandoffTrigger method returns true */
   onHandoff?: (session: FlowSession) => void
+
+  /** Hook called after each step completes. Runs before next step resolution. */
+  onStepComplete?: (context: StepCompleteContext) => Promise<void>
 }
 
 /**
@@ -45,9 +48,13 @@ export class ConversationFlowModule {
    * Configures the module with the given options and returns a DynamicModule.
    */
   static forRoot(options: ConversationFlowModuleOptions): DynamicModule {
-    const flowDefinitions = options.flows.map((flowClass) =>
-      FlowDiscoveryService.buildFlowDefinition(flowClass),
-    )
+    const flowDefinitions = options.flows.map((flowClass) => {
+      const def = FlowDiscoveryService.buildFlowDefinition(flowClass)
+      if (options.onStepComplete) {
+        def.onStepComplete = options.onStepComplete
+      }
+      return def
+    })
 
     const storage: StorageAdapter =
       options.storage === 'memory'

@@ -209,6 +209,65 @@ describe('FlowEngine', () => {
     })
   })
 
+  describe('onStepComplete hook', () => {
+    it('fires after step executes with correct context', async () => {
+      const hook = jest.fn()
+      const flowWithHook = createFlow({ onStepComplete: hook })
+      const engine = FlowEngine.create(storage, [flowWithHook])
+
+      await engine.process({ flowId: 'test-flow', sessionId: 'user-1', input: 'hi' })
+
+      expect(hook).toHaveBeenCalledTimes(1)
+      expect(hook).toHaveBeenCalledWith(
+        expect.objectContaining({
+          flowId: 'test-flow',
+          stepName: 'greet',
+          input: 'hi',
+          response: 'Hello! What is your name?',
+        }),
+      )
+    })
+
+    it('can mutate session.data and mutations persist', async () => {
+      const hook = jest.fn(async (ctx: { session: { data: Record<string, unknown> } }) => {
+        ctx.session.data.hookRan = true
+      })
+      const flowWithHook = createFlow({ onStepComplete: hook })
+      const engine = FlowEngine.create(storage, [flowWithHook])
+
+      const result = await engine.process({ flowId: 'test-flow', sessionId: 'user-1', input: '' })
+      expect(result.session.data.hookRan).toBe(true)
+    })
+
+    it('mutations influence @Condition evaluation', async () => {
+      const flow: FlowDefinition = {
+        flowId: 'hook-condition',
+        steps: [
+          {
+            name: 'start',
+            handler: async () => 'Hello',
+            conditions: [
+              { when: async (s) => s.data.routed === true, then: 'branch-a' },
+            ],
+          },
+          { name: 'branch-a', after: 'start', handler: async () => 'Branch A!' },
+        ],
+        onStepComplete: async (ctx) => {
+          ctx.session.data.routed = true
+        },
+      }
+      const engine = FlowEngine.create(storage, [flow])
+
+      const r1 = await engine.process({ flowId: 'hook-condition', sessionId: 'u1', input: '' })
+      expect(r1.session.currentStep).toBe('branch-a')
+    })
+
+    it('works normally when no hook is defined', async () => {
+      const result = await engine.process({ flowId: 'test-flow', sessionId: 'user-1', input: '' })
+      expect(result.response).toBe('Hello! What is your name?')
+    })
+  })
+
   it('supports multiple independent sessions', async () => {
     await engine.process({ flowId: 'test-flow', sessionId: 'user-1', input: '' })
     await engine.process({ flowId: 'test-flow', sessionId: 'user-2', input: '' })

@@ -1,9 +1,15 @@
 import 'reflect-metadata'
-import type { FlowDefinition, StepDefinition, FlowSession } from '@conversation-flow/core'
+import type {
+  ConditionalRoute,
+  FlowDefinition,
+  StepDefinition,
+  FlowSession,
+} from '@conversation-flow/core'
 import {
   CONVERSATION_FLOW_METADATA,
   STEP_METADATA,
   AFTER_METADATA,
+  CONDITION_METADATA,
   HANDOFF_TRIGGER_METADATA,
   SESSION_METADATA,
 } from '../decorators/index.js'
@@ -57,7 +63,11 @@ export class FlowDiscoveryService {
           )
         }
 
-        steps.push({ name: stepName, after: afterStep, handler })
+        const conditions = Reflect.getMetadata(CONDITION_METADATA, prototype, methodName) as
+          | ConditionalRoute[]
+          | undefined
+
+        steps.push({ name: stepName, after: afterStep, conditions, handler })
       }
 
       const isHandoff = Reflect.getMetadata(HANDOFF_TRIGGER_METADATA, prototype, methodName) as

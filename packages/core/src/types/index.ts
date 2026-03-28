@@ -108,4 +108,9 @@ export interface ProcessResult {
   handoff: boolean
 }
 
-export type { StepDefinition, FlowDefinition } from './flow-definition.js'
+export type {
+  ConditionalRoute,
+  StepCompleteContext,
+  StepDefinition,
+  FlowDefinition,
+} from './flow-definition.js'

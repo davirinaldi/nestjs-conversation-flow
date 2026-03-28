@@ -4,6 +4,8 @@ export type {
   StorageAdapter,
   ProcessInput,
   ProcessResult,
+  ConditionalRoute,
+  StepCompleteContext,
   StepDefinition,
   FlowDefinition,
 } from './types/index.js'

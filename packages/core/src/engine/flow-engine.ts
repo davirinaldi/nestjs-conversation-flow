@@ -77,7 +77,17 @@ export class FlowEngine {
     const response = await stepDef.handler(session)
     historyEntry.response = response
 
-    const nextStep = this.stepRouter.getNextStep(flow, session.currentStep)
+    if (flow.onStepComplete) {
+      await flow.onStepComplete({
+        flowId: flow.flowId,
+        stepName: session.currentStep,
+        input: input.input,
+        response,
+        session,
+      })
+    }
+
+    const nextStep = await this.stepRouter.resolveNextStep(flow, session.currentStep, session)
     session.currentStep = nextStep ? nextStep.name : FLOW_COMPLETED
 
     let handoff = false
