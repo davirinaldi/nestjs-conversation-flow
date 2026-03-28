@@ -1,6 +1,6 @@
 {
   "name": "@conversation-flow/core",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Stateful conversation flow engine for Node.js — zero dependencies",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -32,6 +32,12 @@
     "url": "https://github.com/davirinaldi/nestjs-conversation-flow",
     "directory": "packages/core"
   },
-  "keywords": ["conversation", "flow", "chatbot", "state-machine", "session"],
+  "keywords": [
+    "conversation",
+    "flow",
+    "chatbot",
+    "state-machine",
+    "session"
+  ],
   "license": "MIT"
 }

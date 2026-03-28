@@ -1,6 +1,6 @@
 {
   "name": "@conversation-flow/express",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Express adapter for @conversation-flow/core",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -41,6 +41,11 @@
     "url": "https://github.com/davirinaldi/nestjs-conversation-flow",
     "directory": "packages/express"
   },
-  "keywords": ["conversation-flow", "express", "chatbot", "middleware"],
+  "keywords": [
+    "conversation-flow",
+    "express",
+    "chatbot",
+    "middleware"
+  ],
   "license": "MIT"
 }

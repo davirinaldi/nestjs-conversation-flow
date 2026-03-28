@@ -1,6 +1,6 @@
 {
   "name": "@conversation-flow/redis",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Redis storage adapter for @conversation-flow/core",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -41,6 +41,11 @@
     "url": "https://github.com/davirinaldi/nestjs-conversation-flow",
     "directory": "packages/redis"
   },
-  "keywords": ["conversation-flow", "redis", "storage", "session"],
+  "keywords": [
+    "conversation-flow",
+    "redis",
+    "storage",
+    "session"
+  ],
   "license": "MIT"
 }

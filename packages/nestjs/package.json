@@ -1,6 +1,6 @@
 {
   "name": "@conversation-flow/nestjs",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "NestJS module and decorators for @conversation-flow/core",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -45,6 +45,12 @@
     "url": "https://github.com/davirinaldi/nestjs-conversation-flow",
     "directory": "packages/nestjs"
   },
-  "keywords": ["nestjs", "conversation", "flow", "chatbot", "decorators"],
+  "keywords": [
+    "nestjs",
+    "conversation",
+    "flow",
+    "chatbot",
+    "decorators"
+  ],
   "license": "MIT"
 }
