@@ -10,7 +10,8 @@
     "lint": "eslint \"packages/*/src/**/*.ts\"",
     "format": "prettier --write \"packages/*/src/**/*.ts\"",
     "format:check": "prettier --check \"packages/*/src/**/*.ts\"",
-    "clean": "rm -rf packages/*/dist packages/*/coverage"
+    "clean": "rm -rf packages/*/dist packages/*/coverage",
+    "publish:all": "npm run build && npm publish --workspace=packages/core --access public && npm publish --workspace=packages/nestjs --access public && npm publish --workspace=packages/redis --access public && npm publish --workspace=packages/express --access public"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
