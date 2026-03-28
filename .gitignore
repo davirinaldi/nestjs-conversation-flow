@@ -1,0 +1,8 @@
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+.eslintcache
+.DS_Store
+*.log
+CLAUDE.MD
